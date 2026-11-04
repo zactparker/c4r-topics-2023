@@ -44,6 +44,33 @@ def short(t):  # label = text before the "(e.g. …)" / "(i.e. …)" gloss; a ba
     return f"{lab} ({gloss.group(1)})" if gloss and re.fullmatch(r"[A-Z]+", lab) else lab
 topics = [dict(label=short(t), full=t, n=c) for t, c in sorted(cnt.items(), key=lambda kv: (-kv[1], kv[0]))]
 
+# Every option exactly as worded on the survey form (read from the live form on 2026-11-04), shown A–Z
+# in the page's topic-list toggle. It must match the export's options, so a topic nobody picked
+# can't go missing from the chart.
+SURVEY_TOPICS = [
+ "HARK. (i.e. hypothesizing after results known).",
+ "Open science practices. (e.g. sharing code well, open publishing)",
+ "Prevalence of the replication crisis.",
+ "Power calculations.  (e.g. selecting adequate sample sizes)",
+ "Planning experiments with reproducibility in mind. (e.g. availability of equipment)",
+ "What makes for a good quantitative model. (i.e. does a given model make sense for your data?)",
+ "Bias in machine learning. (e.g. representation bias, over/underfitting)",
+ "Comprehensive literature research.",
+ "Pitfalls of data mining.",
+ "How and why to create a data analysis plan.",
+ "Causality. (i.e. how to know which variables influence one another)",
+ "Common assumptions & potential errors in research.",
+ "How to identify problems in peer-reviewed literature. (e.g. selection bias, blind spots in claims)",
+ "Use of frequentist statistics. (e.g. using the right statistics for the right questions)",
+ "Inclusion and exclusion criteria. (e.g. controlling for comorbidities)",
+ "Ensuring analysis reproducibility. (e.g. listing transparent and comprehensive technical details)",
+ "Use of Bayesian statistics. (e.g. incorporating prior knowledge)",
+ "P-Hacking. (i.e. dubious data selection engineering statistical significance)",
+]
+norm = lambda s: " ".join(s.split())  # the form's double space after "Power calculations." displays as one
+assert {norm(t) for t in SURVEY_TOPICS} == {norm(t) for t in cnt}, "survey form and export list different topics"
+options = sorted((norm(t) for t in SURVEY_TOPICS), key=str.casefold)
+
 # ---- comment codes ---------------------------------------------------------
 # Codes apply to a respondent's two open-ended answers together. R-ids are 1-based row order.
 THEMES = {
@@ -113,7 +140,7 @@ with open(d / "comment-codes.csv", "w", newline="") as f:
     for i, v in sorted(CODES.items()):
         for c in v.split(): w.writerow([recs[i]["id"], THEMES[c]])
 
-blob = dict(n=len(recs), nTopic=n_topic, nComment=n_comment, nCoded=len(CODES), topics=topics, themes=themes, quotes=quotes)
+blob = dict(n=len(recs), nTopic=n_topic, nComment=n_comment, nCoded=len(CODES), topics=topics, options=options, themes=themes, quotes=quotes)
 page = ROOT / "index.html"
 s = page.read_text()
 s = re.sub(r"/\*DATA\*/.*?/\*END\*/", lambda m: "/*DATA*/" + json.dumps(blob, ensure_ascii=False) + "/*END*/", s, flags=re.S)
