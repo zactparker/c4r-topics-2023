@@ -1,0 +1,19 @@
+topic,times_selected,pct_of_respondents
+P-Hacking. (i.e. dubious data selection engineering statistical significance),84,46.4
+"Open science practices. (e.g. sharing code well, open publishing)",69,38.1
+"How to identify problems in peer-reviewed literature. (e.g. selection bias, blind spots in claims)",61,33.7
+HARK. (i.e. hypothesizing after results known).,59,32.6
+Prevalence of the replication crisis.,59,32.6
+Common assumptions & potential errors in research.,56,30.9
+Ensuring analysis reproducibility. (e.g. listing transparent and comprehensive technical details),51,28.2
+Causality. (i.e. how to know which variables influence one another),49,27.1
+Planning experiments with reproducibility in mind. (e.g. availability of equipment),46,25.4
+What makes for a good quantitative model. (i.e. does a given model make sense for your data?),32,17.7
+"Bias in machine learning. (e.g. representation bias, over/underfitting)",31,17.1
+Use of frequentist statistics. (e.g. using the right statistics for the right questions),30,16.6
+How and why to create a data analysis plan.,29,16.0
+Power calculations. (e.g. selecting adequate sample sizes),29,16.0
+Comprehensive literature research.,27,14.9
+Pitfalls of data mining.,24,13.3
+Inclusion and exclusion criteria. (e.g. controlling for comorbidities),21,11.6
+Use of Bayesian statistics. (e.g. incorporating prior knowledge),15,8.3

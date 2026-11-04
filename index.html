@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C4R Topic Survey 2023</title>
+<style>
+:root{
+  --accent:#6F00FF; --ink:#202020; --body:#333132; --hairline:#E0E0E0;
+  --paper:#F3F3F3; --card:#FFFFFF; --pre:#0082FF; --gutter:24px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--body);
+  font:500 1rem/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.wrap{max-width:1080px;margin:0 auto;padding:24px var(--gutter) 56px}
+h1{font-size:clamp(1.4rem,1.05rem + 1.6vw,1.75rem);font-weight:700;color:var(--ink);line-height:1.25;
+  letter-spacing:-.01em;margin:2px 0 16px}
+.topnav{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--hairline);
+  margin:0 calc(-1 * var(--gutter)) 16px;padding:8px var(--gutter)}
+.topnav nav{display:flex;flex-wrap:wrap;gap:4px 6px}
+.topnav a{font-size:.875rem;font-weight:500;color:var(--body);text-decoration:none;
+  padding:5px 12px;border-radius:8px;transition:background .15s,color .15s}
+.topnav a:hover{background:var(--ink);color:#FFFFFF}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.skip{position:absolute;left:8px;top:-64px;z-index:50;background:var(--ink);color:#FFFFFF;padding:10px 16px;
+  border-radius:8px;font-weight:700;text-decoration:none}
+.skip:focus{top:8px}
+.panel{background:var(--card);border:1px solid var(--hairline);border-radius:8px;padding:20px 20px 16px;margin:0 0 20px;scroll-margin-top:64px}
+h2.seclabel{font-size:.8125rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--body);margin:0 0 10px;line-height:1.4}
+.ct{font-size:1.2rem;font-weight:700;color:var(--ink);line-height:1.4;margin:0 0 2px}
+p.cs{margin:0 0 10px;font-size:.875rem;color:var(--body)}
+.miniviz{overflow-x:auto;overscroll-behavior-x:contain}
+.miniviz svg{display:block;max-width:none}
+.bar{transition:opacity .12s}
+#tip{position:absolute;z-index:30;display:none;max-width:min(380px,calc(100vw - 24px));background:#202020;color:#FFFFFF;
+  border-radius:8px;padding:11px 14px;font-size:.8rem;line-height:1.5;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+#tip .tq{font-weight:700;margin-bottom:6px}
+#tip .stat{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:.78rem}
+.quotes{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.quote{background:#F8F8F8;border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:10px 12px;margin:0;font-size:.95rem;line-height:1.55}
+.quote figcaption{font-size:.8125rem;color:var(--body);margin-top:6px}
+.dl a{display:inline-block;padding:3px 0;font-size:1rem}
+.dl .cap2{font-size:.875rem;color:var(--body);margin:0 0 10px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (max-width:640px){
+  :root{--gutter:16px}
+  .panel{padding:16px 14px 14px}
+  .topnav{position:static}
+  .quotes{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+<div class="wrap">
+  <header><h1>C4R topic survey, October 2023.</h1></header>
+  <div class="topnav">
+    <nav aria-label="On this page">
+      <a href="#topics">Topics</a>
+      <a href="#themes">Comment themes</a>
+      <a href="#comments">Comments</a>
+      <a href="#downloads">Download</a>
+    </nav>
+  </div>
+
+  <main id="main">
+  <section class="panel" id="topics">
+    <h2 class="seclabel">Topics</h2>
+    <h3 class="ct">Which topics hold back science the most?</h3>
+    <p class="cs" id="topics-n"></p>
+    <div class="miniviz" id="topicchart"></div>
+  </section>
+
+  <section class="panel" id="themes">
+    <h2 class="seclabel">Comment themes</h2>
+    <h3 class="ct">What else did respondents raise?</h3>
+    <p class="cs" id="themes-n"></p>
+    <div class="miniviz" id="themechart"></div>
+  </section>
+
+  <section class="panel" id="comments">
+    <h2 class="seclabel">Comments</h2>
+    <div class="quotes" id="quotes"></div>
+  </section>
+
+  <section class="panel" id="downloads">
+    <h2 class="seclabel">Download</h2>
+    <div class="dl">
+      <div><a href="data/topic-survey-2023-deidentified.csv" download>topic-survey-2023-deidentified.csv</a>
+        <div class="cap2">All responses, de-identified.</div></div>
+      <div><a href="data/comment-codes.csv" download>comment-codes.csv</a>
+        <div class="cap2">Theme codes for the written comments.</div></div>
+    </div>
+  </section>
+  </main>
+</div>
+<div id="tip" aria-hidden="true"></div>
+
+<script>
+const DATA = /*DATA*/{"n": 182, "nTopic": 181, "nComment": 52, "nCoded": 46, "topics": [{"label": "P-Hacking", "full": "P-Hacking. (i.e. dubious data selection engineering statistical significance)", "n": 84}, {"label": "Open science practices", "full": "Open science practices. (e.g. sharing code well, open publishing)", "n": 69}, {"label": "How to identify problems in peer-reviewed literature", "full": "How to identify problems in peer-reviewed literature. (e.g. selection bias, blind spots in claims)", "n": 61}, {"label": "HARK (hypothesizing after results known)", "full": "HARK. (i.e. hypothesizing after results known).", "n": 59}, {"label": "Prevalence of the replication crisis", "full": "Prevalence of the replication crisis.", "n": 59}, {"label": "Common assumptions & potential errors in research", "full": "Common assumptions & potential errors in research.", "n": 56}, {"label": "Ensuring analysis reproducibility", "full": "Ensuring analysis reproducibility. (e.g. listing transparent and comprehensive technical details)", "n": 51}, {"label": "Causality", "full": "Causality. (i.e. how to know which variables influence one another)", "n": 49}, {"label": "Planning experiments with reproducibility in mind", "full": "Planning experiments with reproducibility in mind. (e.g. availability of equipment)", "n": 46}, {"label": "What makes for a good quantitative model", "full": "What makes for a good quantitative model. (i.e. does a given model make sense for your data?)", "n": 32}, {"label": "Bias in machine learning", "full": "Bias in machine learning. (e.g. representation bias, over/underfitting)", "n": 31}, {"label": "Use of frequentist statistics", "full": "Use of frequentist statistics. (e.g. using the right statistics for the right questions)", "n": 30}, {"label": "How and why to create a data analysis plan", "full": "How and why to create a data analysis plan.", "n": 29}, {"label": "Power calculations", "full": "Power calculations. (e.g. selecting adequate sample sizes)", "n": 29}, {"label": "Comprehensive literature research", "full": "Comprehensive literature research.", "n": 27}, {"label": "Pitfalls of data mining", "full": "Pitfalls of data mining.", "n": 24}, {"label": "Inclusion and exclusion criteria", "full": "Inclusion and exclusion criteria. (e.g. controlling for comorbidities)", "n": 21}, {"label": "Use of Bayesian statistics", "full": "Use of Bayesian statistics. (e.g. incorporating prior knowledge)", "n": 15}], "themes": [{"label": "Incentives & publication pressure", "n": 18}, {"label": "Journals, peer review & accountability", "n": 6}, {"label": "Methods & materials reporting", "n": 6}, {"label": "Research questions, theory & interpretation", "n": 6}, {"label": "Funding, resources & working conditions", "n": 5}, {"label": "Publication bias & null results", "n": 5}, {"label": "Rigor training & education", "n": 5}, {"label": "Statistical literacy", "n": 5}, {"label": "Causal inference & controls", "n": 4}, {"label": "Code & software practices", "n": 4}, {"label": "Preregistration & registered reports", "n": 4}, {"label": "Experimental design (blinding, degrees of freedom)", "n": 3}, {"label": "Other", "n": 4}], "quotes": [{"text": "How the incentive structure of science is geared towards generating splashy findings, rather than dispassionate pursuit of truth.", "stage": "Principal Investigator / Professor"}, {"text": "Every biomed wet lab does p hacking. The only way to prevent it is to require that every experiment be registered before it starts in an electronic lab notebook.", "stage": "Principal Investigator / Professor"}, {"text": "I think one serious QRP not discussed enough is outlier removal. … In fact, if you go to the reference for Tukey's Fences (Tukey 1976), he DOES NOT SAY that it can be used for data REMOVAL, only flagging data to examine for technical problems in measurements.", "stage": "Doctoral Student"}, {"text": "Statistical literacy! Not only the ability to plan a well controlled and powered experiment and perform a test that answers the question at hand, but *also* to be equipped to confidently evaluate the statistical claims of others in the literature and not let sloppy reasoning slide.", "stage": "Postdoc"}, {"text": "There should be a course on how to be a reviewer for academic papers. … it's all for naught if the \"referees\" are not good at calling foul.", "stage": "Research Professional (Non-PhD)"}, {"text": "Formulating good research questions that can be answered rigorously with the tools at hand … In other words, conceptual rigor.", "stage": "Principal Investigator / Professor"}, {"text": "Sources of spurious correlation are not widely recognized, such as conditioning variable selection on a collider relationship", "stage": "Principal Investigator / Professor"}, {"text": "Many people believe that if they get a significant with N=10, they would also get it with a bigger sample because their significant effect size is so big but they don't realize that their effect size is largely overestimated", "stage": "Principal Investigator / Professor"}, {"text": "Rigor must not be an “add-on” but integral part of all levels and facets of scientific endeavors.", "stage": "Principal Investigator / Professor"}, {"text": "I know some researchers who can't afford modern equipment and rely on equipment that has been out of production for decades.", "stage": "Postdoc"}, {"text": "reagents!!!! you have totally missed the authentication of key biological resources as well as software tools!", "stage": "Principal Investigator / Professor"}, {"text": "Even openly available resources are often awkward to actually access and use … If we want open resources to succeed and find widespread use, attention should be paid to the design of their usage.", "stage": "Doctoral Student"}, {"text": "Over-reliance on other peoples code (without understanding what it’s doing)", "stage": "Undergraduate Student"}, {"text": "Many studies seemingly retrofit narratives rather than arising from an important larger question", "stage": "Graduate Student"}, {"text": "I get rushed to move on to the next experiment before running the experiment several times", "stage": "Graduate Student"}]}/*END*/;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const pct = (c,n) => Math.round(c/n*100)+"%";
+const tip = document.getElementById("tip");
+function showTip(html, ev){
+  tip.innerHTML = html; tip.style.display = "block";
+  const pad=14, w=tip.offsetWidth, h=tip.offsetHeight, cw=document.documentElement.clientWidth, ch=document.documentElement.clientHeight;
+  let x=ev.pageX+pad, y=ev.pageY+pad;
+  if(x+w > window.scrollX+cw-8) x=ev.pageX-w-pad;
+  if(y+h > window.scrollY+ch-8) y=ev.pageY-h-pad;
+  x=Math.max(window.scrollX+8, Math.min(x, window.scrollX+cw-w-8)); y=Math.max(window.scrollY+8, y);
+  tip.style.left=x+"px"; tip.style.top=y+"px";
+}
+function hideTip(){ tip.style.display="none"; }
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") hideTip(); });
+window.addEventListener("scroll", hideTip);
+
+/* split a label into lines of at most `max` characters */
+function wrap(t, max){
+  const out=[]; let line="";
+  t.split(" ").forEach(w=>{ if((line+" "+w).trim().length>max && line){ out.push(line); line=w; } else line=(line+" "+w).trim(); });
+  if(line) out.push(line); return out;
+}
+
+/* horizontal bars on a full 0–100% axis; count and share labelled at the bar end */
+function barChart(el, rows, n, name){
+  const Wd=Math.max(300, Math.floor(el.clientWidth||300)), stacked=Wd<620;
+  const L=stacked?0:Math.round(Wd*0.38), R=Wd-78, chars=stacked?Math.floor(Wd/7.2):Math.floor((L-14)/7.2);
+  const lines=rows.map(r=>wrap(r.label, chars));
+  const lh=16, barH=16, gap=12, top=4, axisH=24;
+  const rowH=lines.map(l=> stacked ? l.length*lh+barH+gap+4 : Math.max(barH, l.length*lh)+gap);
+  const H=top+rowH.reduce((a,b)=>a+b,0)+axisH;
+  const X=v=>L+v*(R-L);
+  let s=`<svg viewBox="0 0 ${Wd} ${H}" width="${Wd}" height="${H}" role="img" aria-label="${esc(name)}: ${rows.map(r=>`${esc(r.label)} ${r.n}`).join(", ")} (of ${n})">`;
+  const yEnd=H-axisH+2;
+  [0,.25,.5,.75,1].forEach(v=>{
+    s+=`<line x1="${X(v)}" y1="${top}" x2="${X(v)}" y2="${yEnd}" stroke="${css('--hairline')}"/>`+
+       `<text x="${X(v)}" y="${yEnd+16}" text-anchor="middle" font-size="12" fill="${css('--body')}">${v*100}%</text>`;
+  });
+  let y=top;
+  rows.forEach((r,i)=>{
+    const l=lines[i], h=rowH[i];
+    const by = stacked ? y+l.length*lh+4 : y+(h-gap-barH)/2;
+    const w=Math.max(2, r.n/n*(R-L));
+    s+=`<g class="bar" data-i="${i}" style="cursor:pointer"><rect x="0" y="${y}" width="${Wd}" height="${h}" fill="transparent"/>`;
+    l.forEach((t,k)=>{
+      const ty = stacked ? y+12+k*lh : y+(h-gap)/2-(l.length*lh)/2+12+k*lh;
+      s+=`<text x="${stacked?0:L-10}" y="${ty}" ${stacked?"":'text-anchor="end"'} font-size="13" fill="${css('--body')}">${esc(t)}</text>`;
+    });
+    s+=`<rect x="${L}" y="${by}" width="${w}" height="${barH}" rx="3" fill="${css('--accent')}" opacity="0.85"/>`+
+       `<text x="${L+w+8}" y="${by+12.5}" font-size="13" fill="${css('--ink')}"><tspan font-weight="700">${r.n}</tspan> (${pct(r.n,n)})</text></g>`;
+    y+=h;
+  });
+  el.innerHTML=s+"</svg>";
+  el.querySelectorAll(".bar").forEach(g=>{
+    const r=rows[+g.dataset.i];
+    const html=`<div class="tq">${esc(r.full||r.label)}</div><div class="stat">${r.n} of ${n} (${pct(r.n,n)})</div>`;
+    g.addEventListener("mousemove", ev=>showTip(html, ev));
+    g.addEventListener("mouseenter", ()=>el.querySelectorAll(".bar").forEach(o=>o.style.opacity=o===g?1:.45));
+    g.addEventListener("mouseleave", ()=>{ hideTip(); el.querySelectorAll(".bar").forEach(o=>o.style.opacity=1); });
+  });
+}
+
+/* touch: tapping a bar shows its details; tapping elsewhere hides them */
+let tapMark=null;
+document.addEventListener("pointerup", e=>{
+  if(e.pointerType==="mouse") return;
+  const m=e.target.closest ? e.target.closest(".bar") : null;
+  if(tapMark && tapMark!==m) tapMark.dispatchEvent(new MouseEvent("mouseleave"));
+  if(m){ if(m!==tapMark) m.dispatchEvent(new MouseEvent("mouseenter"));
+    m.dispatchEvent(new MouseEvent("mousemove", {clientX:e.clientX, clientY:e.clientY, bubbles:true})); }
+  else hideTip();
+  tapMark=m;
+});
+
+document.getElementById("topics-n").textContent=`Each respondent picked 1–5 of ${DATA.topics.length}; n = ${DATA.nTopic}`;
+document.getElementById("themes-n").textContent=`Respondents whose comments raised each theme; n = ${DATA.nCoded}`;
+document.getElementById("quotes").innerHTML=DATA.quotes.map(q=>
+  `<figure class="quote"><blockquote style="margin:0">“${esc(q.text)}”</blockquote><figcaption>${esc(q.stage)}</figcaption></figure>`).join("");
+function draw(){
+  barChart(document.getElementById("topicchart"), DATA.topics, DATA.nTopic, "Topics selected");
+  barChart(document.getElementById("themechart"), DATA.themes, DATA.nCoded, "Comment themes");
+}
+draw();
+let rt, lastW=window.innerWidth;
+window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(()=>{ if(window.innerWidth!==lastW){ lastW=window.innerWidth; draw(); } },150); });
+</script>
+</body>
+</html>
