@@ -35,41 +35,7 @@ for i, field in WITHHELD.items():
     assert recs[i][field], f"R{i+1:03d} {field} is already empty; check the row order"
     recs[i][field] = ""
 
-# ---- topics ----------------------------------------------------------------
-cnt = Counter(t for x in recs for t in x["topics"])
-n_topic = sum(1 for x in recs if x["topics"])
-def short(t):  # label = text before the "(e.g. …)" / "(i.e. …)" gloss; a bare acronym keeps its gloss
-    lab = t.split(" (")[0].rstrip(".")
-    gloss = re.search(r"\((?:i\.e\.|e\.g\.) (.+?)\)", t)
-    return f"{lab} ({gloss.group(1)})" if gloss and re.fullmatch(r"[A-Z]+", lab) else lab
-topics = [dict(label=short(t), full=t, n=c) for t, c in sorted(cnt.items(), key=lambda kv: (-kv[1], kv[0]))]
 
-# Every option exactly as worded on the survey form (read from the live form on 2026-11-04), shown A–Z
-# in the page's topic-list toggle. It must match the export's options, so a topic nobody picked
-# can't go missing from the chart.
-SURVEY_TOPICS = [
- "HARK. (i.e. hypothesizing after results known).",
- "Open science practices. (e.g. sharing code well, open publishing)",
- "Prevalence of the replication crisis.",
- "Power calculations.  (e.g. selecting adequate sample sizes)",
- "Planning experiments with reproducibility in mind. (e.g. availability of equipment)",
- "What makes for a good quantitative model. (i.e. does a given model make sense for your data?)",
- "Bias in machine learning. (e.g. representation bias, over/underfitting)",
- "Comprehensive literature research.",
- "Pitfalls of data mining.",
- "How and why to create a data analysis plan.",
- "Causality. (i.e. how to know which variables influence one another)",
- "Common assumptions & potential errors in research.",
- "How to identify problems in peer-reviewed literature. (e.g. selection bias, blind spots in claims)",
- "Use of frequentist statistics. (e.g. using the right statistics for the right questions)",
- "Inclusion and exclusion criteria. (e.g. controlling for comorbidities)",
- "Ensuring analysis reproducibility. (e.g. listing transparent and comprehensive technical details)",
- "Use of Bayesian statistics. (e.g. incorporating prior knowledge)",
- "P-Hacking. (i.e. dubious data selection engineering statistical significance)",
-]
-norm = lambda s: " ".join(s.split())  # the form's double space after "Power calculations." displays as one
-assert {norm(t) for t in SURVEY_TOPICS} == {norm(t) for t in cnt}, "survey form and export list different topics"
-options = sorted((norm(t) for t in SURVEY_TOPICS), key=str.casefold)
 
 # ---- comment codes ---------------------------------------------------------
 # Codes apply to a respondent's two open-ended answers together. R-ids are 1-based row order.
