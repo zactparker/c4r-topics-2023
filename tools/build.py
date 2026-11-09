@@ -7,6 +7,7 @@ Writes:
   data/topic-counts.csv                    times each topic was picked
   data/comment-codes.csv                   one row per (respondent, theme) for the coded comments
   index.html                               rewrites the DATA blob between /*DATA*/ markers
+                                           (topic counts overall and per training level, themes, quotes)
 """
 import csv, json, re, sys
 from collections import Counter
@@ -35,7 +36,65 @@ for i, field in WITHHELD.items():
     assert recs[i][field], f"R{i+1:03d} {field} is already empty; check the row order"
     recs[i][field] = ""
 
+# ---- topics ----------------------------------------------------------------
+cnt = Counter(t for x in recs for t in x["topics"])
+n_topic = sum(1 for x in recs if x["topics"])
+def short(t):  # label = text before the "(e.g. …)" / "(i.e. …)" gloss; a bare acronym keeps its gloss
+    lab = t.split(" (")[0].rstrip(".")
+    gloss = re.search(r"\((?:i\.e\.|e\.g\.) (.+?)\)", t)
+    return f"{lab} ({gloss.group(1)})" if gloss and re.fullmatch(r"[A-Z]+", lab) else lab
+topics = [dict(label=short(t), full=t, n=c) for t, c in sorted(cnt.items(), key=lambda kv: (-kv[1], kv[0]))]
 
+# Every option exactly as worded on the survey form (read from the live form on 2026-11-04), shown A–Z
+# in the page's "All survey topics" list. It must match the export's options, so a topic nobody picked
+# can't go missing from the chart.
+SURVEY_TOPICS = [
+ "HARK. (i.e. hypothesizing after results known).",
+ "Open science practices. (e.g. sharing code well, open publishing)",
+ "Prevalence of the replication crisis.",
+ "Power calculations.  (e.g. selecting adequate sample sizes)",
+ "Planning experiments with reproducibility in mind. (e.g. availability of equipment)",
+ "What makes for a good quantitative model. (i.e. does a given model make sense for your data?)",
+ "Bias in machine learning. (e.g. representation bias, over/underfitting)",
+ "Comprehensive literature research.",
+ "Pitfalls of data mining.",
+ "How and why to create a data analysis plan.",
+ "Causality. (i.e. how to know which variables influence one another)",
+ "Common assumptions & potential errors in research.",
+ "How to identify problems in peer-reviewed literature. (e.g. selection bias, blind spots in claims)",
+ "Use of frequentist statistics. (e.g. using the right statistics for the right questions)",
+ "Inclusion and exclusion criteria. (e.g. controlling for comorbidities)",
+ "Ensuring analysis reproducibility. (e.g. listing transparent and comprehensive technical details)",
+ "Use of Bayesian statistics. (e.g. incorporating prior knowledge)",
+ "P-Hacking. (i.e. dubious data selection engineering statistical significance)",
+]
+norm = lambda s: " ".join(s.split())  # the form's double space after "Power calculations." displays as one
+assert {norm(t) for t in SURVEY_TOPICS} == {norm(t) for t in cnt}, "survey form and export list different topics"
+options = sorted((norm(t) for t in SURVEY_TOPICS), key=str.casefold)
+
+# ---- training level ---------------------------------------------------------
+# Every answer to "What is your current career stage?" exactly as worded in the export, in career
+# order; a blank answer is shown as "Not shared". The page's checkboxes restrict the topics chart to
+# the checked levels, so each level carries the number of its respondents who picked at least one
+# topic and each topic a count per level. The assert catches an answer the list doesn't know.
+STAGES = [
+ "Undergraduate Student",
+ "Graduate Student",
+ "Doctoral Student",
+ "Postdoc",
+ "Research Professional (Non-PhD)",
+ "Research Professional (PhD)",
+ "Principal Investigator / Professor",
+]
+NOT_SHARED = "Not shared"
+unknown = {x["stage"] for x in recs} - set(STAGES) - {""}
+assert not unknown, f"career stages missing from STAGES: {unknown}"
+stage_of = lambda x: x["stage"] or NOT_SHARED
+LEVELS = STAGES + [NOT_SHARED]
+levels = [dict(label=s, n=sum(1 for x in recs if x["topics"] and stage_of(x) == s)) for s in LEVELS]
+for t in topics:
+    t["by"] = [sum(1 for x in recs if stage_of(x) == s and t["full"] in x["topics"]) for s in LEVELS]
+    assert sum(t["by"]) == t["n"], t["label"]
 
 # ---- comment codes ---------------------------------------------------------
 # Codes apply to a respondent's two open-ended answers together. R-ids are 1-based row order.
@@ -89,7 +148,7 @@ quotes = []
 for i, field, parts in QUOTES:
     src = recs[i][field]
     for p in parts: assert p in src, (i, p)
-    quotes.append(dict(text=" … ".join(parts), stage=recs[i]["stage"] or "Career stage not given"))
+    quotes.append(dict(text=" … ".join(parts), stage=stage_of(recs[i])))
 
 # ---- write -------------------------------------------------------------------
 d = ROOT / "data"; d.mkdir(exist_ok=True)
@@ -106,10 +165,12 @@ with open(d / "comment-codes.csv", "w", newline="") as f:
     for i, v in sorted(CODES.items()):
         for c in v.split(): w.writerow([recs[i]["id"], THEMES[c]])
 
-blob = dict(n=len(recs), nTopic=n_topic, nComment=n_comment, nCoded=len(CODES), topics=topics, options=options, themes=themes, quotes=quotes)
+blob = dict(n=len(recs), nTopic=n_topic, nComment=n_comment, nCoded=len(CODES), topics=topics, options=options,
+            levels=levels, themes=themes, quotes=quotes)
 page = ROOT / "index.html"
 s = page.read_text()
 s = re.sub(r"/\*DATA\*/.*?/\*END\*/", lambda m: "/*DATA*/" + json.dumps(blob, ensure_ascii=False) + "/*END*/", s, flags=re.S)
 page.write_text(s)
 print(f"{len(recs)} responses, {n_topic} picked topics, {n_comment} wrote comments, {len(CODES)} coded")
 for t in themes: print(t["n"], t["label"])
+print("picked topics by training level:", ", ".join(f'{l["label"]} {l["n"]}' for l in levels))
