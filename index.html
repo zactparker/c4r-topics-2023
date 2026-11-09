@@ -50,7 +50,7 @@ details.ft[open]>summary::before{content:"▾ "}
 summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .topiclist{margin:6px 0 0;padding-left:20px;font-size:.9rem;line-height:1.5;columns:320px 2;column-gap:32px}
 .topiclist li{margin:0 0 4px;break-inside:avoid}
-fieldset.levels{border:0;margin:0 0 14px;padding:0;min-width:0}
+fieldset.levels{border:0;margin:14px 0 0;padding:0;min-width:0}
 .levels legend{font-size:.8125rem;font-weight:500;color:var(--body);padding:0;margin:0 0 6px}
 .levels .opts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
 .levels label{display:inline-flex;align-items:center;gap:6px;font-size:.875rem;line-height:1.4;cursor:pointer}
@@ -91,11 +91,11 @@ fieldset.levels{border:0;margin:0 0 14px;padding:0;min-width:0}
     <h2 class="seclabel">Topics</h2>
     <h3 class="ct">Which topics hold back science the most?</h3>
     <p class="cs" id="topics-n" aria-live="polite"></p>
+    <div class="miniviz" id="topicchart"></div>
     <fieldset class="levels">
       <legend>Training level</legend>
       <div class="opts" id="levelopts"></div>
     </fieldset>
-    <div class="miniviz" id="topicchart"></div>
     <details class="ft">
       <summary>All survey topics, A–Z</summary>
       <ul class="topiclist" id="topiclist"></ul>
